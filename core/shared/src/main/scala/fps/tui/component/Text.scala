@@ -33,14 +33,13 @@ import fps.tui.reactive.ReactiveRuntime
 final class Text private (
     runtime: Runtime,
     focusId: FocusId,
-    reactive: Reactive[String]
+    text: Reactive[String]
 ) extends Component:
-  var text: String = update()
-  def hasFocus: Boolean = runtime.currentFocusId == focusId
+  private def hasFocus: Boolean = runtime.currentFocusId == focusId
 
   def size =
-    text = update()
-    textSize(text)
+    val str = text.value(using ReactiveRuntime.empty)
+    Size(str.size + 4, 5)
 
   def render(size: Size, buf: Buffer): Unit =
     // Border style
@@ -79,13 +78,7 @@ final class Text private (
         x += 1
       buf.put(right, bottom, bottomRight)
 
-    buf.putString(2, 2, text)
-
-  private def update(): String =
-    reactive.value(using ReactiveRuntime.empty)
-
-  private def textSize(text: String): Size =
-    Size(text.size + 4, 5)
+    buf.putString(2, 2, text.peek)
 
 object Text:
   def apply(expr: EventContext ?=> Reactive[String])(using
@@ -94,6 +87,6 @@ object Text:
     ctx.addComponent { runtime =>
       val focusId = FocusId.next
       val eventContext = DefaultEventContext(focusId, runtime)
-      val reactive = expr(using eventContext)
-      new Text(runtime, focusId, reactive)
+      val text = expr(using eventContext)
+      new Text(runtime, focusId, text)
     }
