@@ -28,7 +28,7 @@ import fps.tui.context.LayoutContext
 
 import scala.collection.mutable
 
-final class Column private[tui] (
+final class Row private[tui] (
     border: Option[Border],
     context: DefaultLayoutContext & DefaultEventContext
 ) extends Component:
@@ -41,23 +41,23 @@ final class Column private[tui] (
 
   def size: Size =
     updateSizes()
-    val childSize = sizes.foldLeft(Size.zero)(_.column(_))
+    val childSize = sizes.foldLeft(Size.zero)(_.row(_))
     if border.isDefined then Size(childSize.width + 4, childSize.height + 4)
     else childSize
 
   def render(size: Size, buf: Buffer): Unit =
     if context.hasFocus then border.foreach(_.render(size, buf))
     val inset = if border.isDefined then 2 else 0
-    var y = inset
+    var x = inset
     context.components.zip(sizes).foreach { (child, childSize) =>
       child.render(
         childSize,
-        buf.view(Rect(inset, y, childSize.width, childSize.height))
+        buf.view(Rect(x, inset, childSize.width, childSize.height))
       )
-      y += childSize.height
+      x += childSize.width
     }
 
-object Column:
+object Row:
   def apply(
       border: Option[Border] = None
   )(
@@ -70,5 +70,5 @@ object Column:
         with DefaultLayoutContext(runtime) {}
       body(using context)
 
-      new Column(border, context)
+      new Row(border, context)
     }

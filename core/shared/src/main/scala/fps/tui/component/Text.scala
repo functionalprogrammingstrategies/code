@@ -31,62 +31,32 @@ import fps.tui.reactive.ReactiveRuntime
   * many other components can be built.
   */
 final class Text private (
-    runtime: Runtime,
     focusId: FocusId,
-    text: Reactive[String]
+    border: Option[Border],
+    text: Reactive[String],
+    runtime: Runtime
 ) extends Component:
   private def hasFocus: Boolean = runtime.currentFocusId == focusId
 
   def size =
     val str = text.value(using ReactiveRuntime.empty)
-    Size(str.size + 4, 5)
+    val borderSize = if border.isDefined then 4 else 0
+    Size(str.size + borderSize, 1 + borderSize)
 
   def render(size: Size, buf: Buffer): Unit =
-    // Border style
-    val topLeft = '╭'
-    val topRight = '╮'
-    val horizontal = '─'
-    val vertical = '│'
-    val bottomLeft = '╰'
-    val bottomRight = '╯'
-
-    // Draw border if focused
-    if hasFocus then
-      val right = size.width - 1
-      val bottom = size.height - 1
-
-      // Top row
-      buf.put(0, 0, topLeft)
-      var x = 1
-      while x < size.width do
-        buf.put(x, 0, horizontal)
-        x += 1
-      buf.put(right, 0, topRight)
-
-      // Sides
-      var y = 1
-      while y < bottom do
-        buf.put(0, y, vertical)
-        buf.put(right, y, vertical)
-        y += 1
-
-      // Bottom row
-      buf.put(0, bottom, bottomLeft)
-      x = 1
-      while x < right do
-        buf.put(x, bottom, horizontal)
-        x += 1
-      buf.put(right, bottom, bottomRight)
-
-    buf.putString(2, 2, text.peek)
+    if hasFocus then border.foreach(_.render(size, buf))
+    val inset = if border.isDefined then 2 else 0
+    buf.putString(inset, inset, text.peek)
 
 object Text:
-  def apply(expr: EventContext ?=> Reactive[String])(using
+  def apply(
+      border: Option[Border] = None
+  )(expr: EventContext ?=> Reactive[String])(using
       ctx: LayoutContext
   ): Unit =
     ctx.addComponent { runtime =>
       val focusId = FocusId.next
-      val eventContext = DefaultEventContext(focusId, runtime)
+      val eventContext = new DefaultEventContext(focusId, runtime) {}
       val text = expr(using eventContext)
-      new Text(runtime, focusId, text)
+      new Text(focusId, border, text, runtime)
     }

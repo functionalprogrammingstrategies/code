@@ -16,6 +16,8 @@
 
 package fps.tui
 
+import fps.tui.component.Border
+import fps.tui.component.Row
 import fps.tui.component.Text
 import fps.tui.context.LayoutContext
 import fps.tui.reactive.Reactive
@@ -24,31 +26,29 @@ import terminus.Key
 
 @main def example(): Unit =
   def prompt(question: String)(using LayoutContext) =
-    Text { evt ?=>
-      val name = Signal("")
+    Row(Some(Border.rounded)) { evt ?=>
+      val answer = Signal("")
 
       evt.onAnyKey(key =>
         // Eat keys that can mess up rendering
         if key == Key.tab || key == Key.newLine then ()
+        if key == Key.backspace then answer.set(answer.peek.dropRight(1))
         else
           key.code match
             case terminus.KeyCode.Character(char) =>
-              name.set(name.peek :+ char)
+              answer.set(answer.peek :+ char)
             case _ => ()
       )
 
-      Reactive {
-        val n = name.value
-        if n.isEmpty then s"${question}?"
-        else s"${question}, ${n}?"
-      }
+      Text()(Reactive(question ++ ": "))
+      Text()(Reactive(answer.value))
     }
 
   val ui =
     FullScreen {
-      prompt("Hello")
-      prompt("Whatcha")
-      prompt("What up")
+      prompt("What's your name?")
+      prompt("Are you having fun?")
+      prompt("What's for dinner?")
     }
 
   val terminal = terminus.JLineTerminal.apply

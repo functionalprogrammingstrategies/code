@@ -40,7 +40,7 @@ trait EventContext:
     */
   def onAnyKey(handler: Key => Unit): Unit
 
-final class DefaultEventContext(focusId: FocusId, runtime: Runtime)
+trait DefaultEventContext(focusId: FocusId, runtime: Runtime)
     extends EventContext:
   private val keyHandlers: mutable.Map[Key, mutable.ArrayBuffer[() => Unit]] =
     mutable.Map.empty
@@ -60,3 +60,5 @@ final class DefaultEventContext(focusId: FocusId, runtime: Runtime)
   def nextFocus(): Unit = runtime.nextFocus()
 
   def prevFocus(): Unit = runtime.prevFocus()
+
+  def hasFocus: Boolean = runtime.currentFocusId == focusId

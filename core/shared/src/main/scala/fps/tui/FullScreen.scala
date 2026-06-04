@@ -17,6 +17,7 @@
 package fps.tui
 
 import fps.tui.component.Column
+import fps.tui.context.DefaultEventContext
 import fps.tui.context.DefaultLayoutContext
 import fps.tui.context.LayoutContext
 import terminus.AlternateScreenMode
@@ -90,11 +91,13 @@ object FullScreen:
         Writer
 
   def apply(body: LayoutContext ?=> Unit): FullScreen =
+    val focusId = FocusId.next
     val runtime = Runtime.empty
-    val layoutContext = DefaultLayoutContext(runtime)
+    val context = new DefaultEventContext(focusId, runtime)
+      with DefaultLayoutContext(runtime) {}
     // Evaluate body here so we do not retain a reference to it and it can be garbage collected.
-    body(using layoutContext)
-    val column = new Column(layoutContext)
+    body(using context)
+    val column = new Column(None, context)
     val fullScreen = new FullScreen(runtime, column)
 
     fullScreen
