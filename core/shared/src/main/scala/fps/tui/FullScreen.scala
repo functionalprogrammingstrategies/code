@@ -53,13 +53,12 @@ class FullScreen(runtime: Runtime, column: Column):
             var quit = false
 
             // Setup default handlers
-            runtime.addRootFocusable(
+            runtime.addRootHandlers(
               Map(
                 Key.tab -> Seq(() => runtime.nextFocus()),
                 Key.shift(KeyCode.Tab) -> Seq(() => runtime.prevFocus()),
                 Key.controlQ -> Seq(() => quit = true)
-              ),
-              Seq.empty
+              )
             )
 
             def renderFrame(): Unit =

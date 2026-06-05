@@ -20,8 +20,6 @@ import fps.tui.FocusId
 import fps.tui.Runtime
 import terminus.Key
 
-import scala.collection.mutable
-
 /** The capability of responding to input events. */
 trait EventContext:
   /** Register a handler that fires only for the given key.
@@ -42,20 +40,12 @@ trait EventContext:
 
 trait DefaultEventContext(focusId: FocusId, runtime: Runtime)
     extends EventContext:
-  private val keyHandlers: mutable.Map[Key, mutable.ArrayBuffer[() => Unit]] =
-    mutable.Map.empty
-  private val anyKeyHandlers: mutable.ArrayBuffer[Key => Unit] =
-    mutable.ArrayBuffer.empty
 
   def onKey(key: Key)(handler: => Unit): Unit =
-    keyHandlers.getOrElseUpdate(key, mutable.ArrayBuffer.empty) += (() =>
-      handler
-    )
-    runtime.addFocusable(focusId, keyHandlers, anyKeyHandlers)
+    runtime.addKeyHandler(focusId, key, () => handler)
 
   def onAnyKey(handler: Key => Unit): Unit =
-    anyKeyHandlers += handler
-    runtime.addFocusable(focusId, keyHandlers, anyKeyHandlers)
+    runtime.addAnyKeyHandler(focusId, handler)
 
   def nextFocus(): Unit = runtime.nextFocus()
 

@@ -19,7 +19,6 @@ package fps.tui.component
 import fps.tui.Buffer
 import fps.tui.Component
 import fps.tui.FocusId
-import fps.tui.Runtime
 import fps.tui.Size
 import fps.tui.context.DefaultEventContext
 import fps.tui.context.EventContext
@@ -31,20 +30,17 @@ import fps.tui.reactive.ReactiveRuntime
   * many other components can be built.
   */
 final class Text private (
-    focusId: FocusId,
     border: Option[Border],
     text: Reactive[String],
-    runtime: Runtime
+    context: DefaultEventContext
 ) extends Component:
-  private def hasFocus: Boolean = runtime.currentFocusId == focusId
-
   def size =
     val str = text.value(using ReactiveRuntime.empty)
     val borderSize = if border.isDefined then 4 else 0
     Size(str.size + borderSize, 1 + borderSize)
 
   def render(size: Size, buf: Buffer): Unit =
-    if hasFocus then border.foreach(_.render(size, buf))
+    if context.hasFocus then border.foreach(_.render(size, buf))
     val inset = if border.isDefined then 2 else 0
     buf.putString(inset, inset, text.peek)
 
@@ -58,5 +54,5 @@ object Text:
       val focusId = FocusId.next
       val eventContext = new DefaultEventContext(focusId, runtime) {}
       val text = expr(using eventContext)
-      new Text(focusId, border, text, runtime)
+      new Text(border, text, eventContext)
     }

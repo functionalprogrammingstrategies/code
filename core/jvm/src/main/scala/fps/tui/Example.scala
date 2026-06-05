@@ -29,7 +29,7 @@ import terminus.Key
     Row(Some(Border.rounded)) { evt ?=>
       val answer = Signal("")
 
-      evt.onAnyKey(key =>
+      evt.onAnyKey { key =>
         // Eat keys that can mess up rendering
         if key == Key.tab || key == Key.newLine then ()
         if key == Key.backspace then answer.set(answer.peek.dropRight(1))
@@ -38,7 +38,7 @@ import terminus.Key
             case terminus.KeyCode.Character(char) =>
               answer.set(answer.peek :+ char)
             case _ => ()
-      )
+      }
 
       Text()(Reactive(question ++ ": "))
       Text()(Reactive(answer.value))
