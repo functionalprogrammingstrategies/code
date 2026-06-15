@@ -21,11 +21,12 @@ package fps.tui
   *
   * The protocol for calling the methods on Component is:
   *
-  *   - The constructor should do any required setup, including running any
-  *     reactives.
-  *   - size should do any recalculation required, as rerunning reactives.
-  *   - render should not do any recalculation
-  *   - size is called once before render
+  *   - The constructor is in the setup stage. It should do any required setup,
+  *     such as adding itself to a LayoutContext, but not run reactives.
+  *   - size should do any recalculation required, including running reactives.
+  *   - render should not do any recalculation.
+  *   - size is called once before render.
+  *   - both size and render are only called in the reactive stage.
   */
 trait Component:
   /** Get the size without recalculating any reactive dependencies. */
